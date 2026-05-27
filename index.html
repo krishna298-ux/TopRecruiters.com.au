@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Top Recruiters AU</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; margin: 0; background: #f5f5f5; }
+    header { background: black; color: white; padding: 15px; }
+    .container { max-width: 900px; margin: auto; padding: 20px; }
+    .card {
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .tag {
+      display: inline-block;
+      background: #eee;
+      padding: 5px 10px;
+      border-radius: 20px;
+      margin: 5px;
+      font-size: 12px;
+    }
+    button {
+      background: black;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h2>Top Recruiters AU</h2>
+  <p>Transparent recruiter reviews</p>
+</header>
+
+<div class="container">
+
+  <h3>Recruiters</h3>
+
+  <div class="card">
+    <b>Ava Chen</b><br>
+    FinEdge Recruitment · Sydney<br>
+    ⭐ 3.2 (2 reviews)<br>
+    <div class="tag">Ghosts candidates</div>
+  </div>
+
+  <div class="card">
+    <b>Liam Patel</b><br>
+    BluePeak Search · Melbourne<br>
+    ⭐ 4.5 (3 reviews)<br>
+    <div class="tag">Transparent</div>
+    <div class="tag">Helpful</div>
+  </div>
+
+  <hr>
+
+  <h3>Leave a Review (Anonymous)</h3>
+
+  <input id="name" placeholder="Recruiter name" style="width:100%;padding:10px;"><br><br>
+
+  <textarea id="review" placeholder="Describe what happened..." style="width:100%;padding:10px;height:100px;"></textarea><br><br>
+
+  <button onclick="submitReview()">Submit Review</button>
+
+  <h3>Reviews</h3>
+  <div id="reviews"></div>
+
+</div>
+
+<script>
+function submitReview() {
+  const name = document.getElementById("name").value;
+  const review = document.getElementById("review").value;
+
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = "<b>" + name + "</b><br>" + review;
+
+  document.getElementById("reviews").prepend(div);
+
+  document.getElementById("name").value = "";
+  document.getElementById("review").value = "";
+}
+</script>
+
+</body>
+</html>
