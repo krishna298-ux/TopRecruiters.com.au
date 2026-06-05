@@ -1,83 +1,91 @@
-const agencies = [
-  {
-    name: "WOW Recruitment",
-    location: "Sydney",
-    industry: "Marketing",
-    roleType: "Executive",
-    salary: "$120k - $180k",
-    rating: 4.6,
-    reviews: 48,
-    specialties: ["Executive Search", "Marketing", "Sales", "People & Culture"]
-  },
-  {
-    name: "Bluefin Resources",
-    location: "Sydney",
-    industry: "Financial Services",
-    roleType: "Permanent",
-    salary: "$180k+",
-    rating: 4.4,
-    reviews: 62,
-    specialties: ["Financial Services", "Technology", "Risk", "Transformation"]
-  },
-  {
-    name: "Talentpath Recruitment",
-    location: "Brisbane",
-    industry: "Technology",
-    roleType: "Permanent",
-    salary: "$80k - $120k",
-    rating: 4.2,
-    reviews: 35,
-    specialties: ["Technology", "Sales", "HR", "Customer Experience"]
-  },
-  {
-    name: "Six Degrees Executive",
-    location: "Melbourne",
-    industry: "Retail",
-    roleType: "Executive",
-    salary: "$180k+",
-    rating: 4.7,
-    reviews: 55,
-    specialties: ["Executive Search", "Consumer", "Retail", "Supply Chain"]
+const SUPABASE_URL = "https://lqpzapnmmfuupeghaajc.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable__w3i28yrihzjHfgy1nSfqg_BRRYkqCn";
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+let agencies = [];
+
+async function loadAgencies() {
+  const { data, error } = await supabaseClient
+    .from("agencies")
+    .select("*")
+    .order("name", { ascending: true });
+
+  const container = document.getElementById("agencyResults");
+  const count = document.getElementById("resultCount");
+
+  if (error) {
+    console.error("Error loading agencies:", error);
+    container.innerHTML = `
+      <div class="col-12">
+        <div class="agency-card text-center">
+          <h5 class="fw-bold">Error loading agencies</h5>
+          <p class="text-muted mb-0">Check your Supabase connection, permissions, and table data.</p>
+        </div>
+      </div>
+    `;
+    count.textContent = "0";
+    return;
   }
-];
+
+  agencies = data || [];
+  renderAgencies(agencies);
+}
 
 function renderAgencies(data) {
   const container = document.getElementById("agencyResults");
   const count = document.getElementById("resultCount");
+
   container.innerHTML = "";
   count.textContent = data.length;
 
-  if (data.length === 0) {
+  if (!data.length) {
     container.innerHTML = `
       <div class="col-12">
         <div class="agency-card text-center">
           <h5 class="fw-bold">No agencies found</h5>
-          <p class="text-muted mb-0">Try changing your filters.</p>
+          <p class="text-muted mb-0">Add some rows into your Supabase agencies table.</p>
         </div>
       </div>
     `;
     return;
   }
 
-  data.forEach(agency => {
-    const tags = agency.specialties.map(tag => `<span class="tag">${tag}</span>`).join("");
-
+  data.forEach((agency) => {
     container.innerHTML += `
       <div class="col-md-6 col-lg-4">
-        <a href="#" class="agency-link">
-          <div class="agency-card">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <div>
-                <h5 class="fw-bold mb-1">${agency.name}</h5>
-                <div class="agency-meta">${agency.location} • ${agency.industry}</div>
+        <div class="agency-card">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="fw-bold mb-1">${agency.name || ""}</h5>
+              <div class="agency-meta">
+                ${agency.city || "Unknown city"} • ${agency.state || "Unknown state"}
               </div>
-              <div class="score-badge">${agency.rating}</div>
             </div>
-
-            <p class="text-muted small mb-2">${agency.reviews} reviews • ${agency.roleType} • ${agency.salary}</p>
-            <div>${tags}</div>
+            <div class="score-badge">4.5</div>
           </div>
-        </a>
+
+          <p class="text-muted small mb-2">
+            ${agency.recruiter_type || "Generalist recruiter"}
+          </p>
+
+          <div class="mb-2">
+            <span class="tag">${agency.industry_focus || "Multi-industry"}</span>
+          </div>
+
+          <p class="text-muted small mb-2">
+            ${agency.years_of_operation || ""}
+          </p>
+
+          ${
+            agency.website_url
+              ? `<a href="${agency.website_url}" target="_blank" class="small">Visit Website</a>`
+              : ""
+          }
+        </div>
       </div>
     `;
   });
@@ -87,18 +95,27 @@ function filterAgencies() {
   const location = document.getElementById("locationFilter").value;
   const industry = document.getElementById("industryFilter").value;
   const roleType = document.getElementById("roleFilter").value;
-  const salary = document.getElementById("salaryFilter").value;
 
-  const filtered = agencies.filter(agency => {
-    return (
-      (location === "All Locations" || agency.location === location) &&
-      (industry === "All Industries" || agency.industry === industry) &&
-      (roleType === "All Role Types" || agency.roleType === roleType) &&
-      (salary === "Any Salary" || agency.salary === salary)
-    );
+  const filtered = agencies.filter((agency) => {
+    const matchesLocation =
+      location === "All Locations" ||
+      (agency.city && agency.city.toLowerCase() === location.toLowerCase()) ||
+      (agency.state && agency.state.toLowerCase() === location.toLowerCase());
+
+    const matchesIndustry =
+      industry === "All Industries" ||
+      (agency.industry_focus &&
+        agency.industry_focus.toLowerCase().includes(industry.toLowerCase()));
+
+    const matchesRoleType =
+      roleType === "All Role Types" ||
+      (agency.recruiter_type &&
+        agency.recruiter_type.toLowerCase().includes(roleType.toLowerCase()));
+
+    return matchesLocation && matchesIndustry && matchesRoleType;
   });
 
   renderAgencies(filtered);
 }
 
-renderAgencies(agencies);
+loadAgencies();
